@@ -1,0 +1,832 @@
+package com.xanandu.pantudantu.bill;
+
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.tika.parser.ParseContext;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.xanandu.pantudantu.birthday.BirthdayService;
+import com.xanandu.pantudantu.customer.CustomerService;
+import com.xanandu.pantudantu.model.AdvanceBooking;
+import com.xanandu.pantudantu.model.Bill;
+import com.xanandu.pantudantu.model.BillDetails;
+import com.xanandu.pantudantu.model.BillPaymentDetails;
+import com.xanandu.pantudantu.model.BirthdayPackage;
+import com.xanandu.pantudantu.model.Customer;
+import com.xanandu.pantudantu.model.Locality;
+import com.xanandu.pantudantu.model.MonthlyPass;
+import com.xanandu.pantudantu.model.MonthlyPassAssignment;
+import com.xanandu.pantudantu.model.Playzone;
+import com.xanandu.pantudantu.model.Rclimbing;
+import com.xanandu.pantudantu.model.Rock;
+import com.xanandu.pantudantu.model.ServiceTax;
+import com.xanandu.pantudantu.model.VisitPass;
+import com.xanandu.pantudantu.model.VisitPassAssignmen;
+import com.xanandu.pantudantu.servicetax.ServiceTaxService;
+
+@Controller
+public class BillController {
+	
+	@Autowired
+	BillService billservice;
+	@Autowired
+	CustomerService customerservice;
+	@Autowired
+	ServiceTaxService taxService;
+	
+	@Autowired
+	BirthdayService birthdayservice;
+	
+	@RequestMapping(value="/bill" , method=RequestMethod.GET)
+	public ModelAndView billDetail(org.springframework.ui.Model model)
+	{
+		
+	
+	 
+    List<Playzone> playzoneList=billservice.getListOfPlayzone();
+    List<Rclimbing>rclimbingList=billservice.getListOfRclimbing();
+    List<VisitPass>visitPassList=billservice.getListOfVisitPass();
+    List<MonthlyPass>monthlypasslist=billservice.getListOfMonthlypass();
+    List<BirthdayPackage>birthdaylist=billservice.getListOfBirthday();
+    List<Rock>rocklist=billservice.getListOfRock();
+    model.addAttribute("playzoneList", playzoneList);
+    model.addAttribute("rclimbingList", rclimbingList);
+    model.addAttribute("visitPassList", visitPassList);
+    model.addAttribute("monthlypasslist", monthlypasslist);
+    model.addAttribute("birthdaylist", birthdaylist);
+    model.addAttribute("rocklist", rocklist);
+    		
+	return new ModelAndView("billDetail");
+	}
+	
+	  
+	@RequestMapping(value="/BiillFillUp" ,method=RequestMethod.GET)
+	@ResponseBody
+	public String billStore( org.springframework.ui.Model model, HttpServletRequest request)
+	{
+		
+		String type=request.getParameter("type");
+		
+		if(type.equalsIgnoreCase("playzone"))
+		{
+			System.out.println("welcome in play  zone");
+		
+			String time=request.getParameter("time");
+			double price= Double.parseDouble(request.getParameter("amount"));
+			
+			System.out.println(time+"...."+price);
+			
+			Playzone p=new Playzone();
+			p.setPrice(price);
+			p.setType(type);
+			p.setTime(time);
+			
+		    billservice.savePlayzone(p);
+		   
+        }
+		if(type.equalsIgnoreCase("rclimbing"))
+		{
+			System.out.println("welcome in rclimbing ");
+			String time=request.getParameter("rtime");
+			double price= Double.parseDouble(request.getParameter("amount"));
+			Rclimbing r=new Rclimbing();
+			r.setPrice(price);
+			r.setTime(time);
+			r.setType(type);
+			billservice.saveRclimbing(r);
+			
+			
+
+			
+		}
+		if(type.equalsIgnoreCase("visitpass"))
+		{
+			System.out.println("welcome in visit pass "); 
+			
+			String ptype=request.getParameter("passtype");
+			double price= Double.parseDouble(request.getParameter("vamount"));
+			VisitPass pass=new VisitPass();
+			pass.setPassTypa(ptype);
+			pass.setPrice(price);
+			pass.setType(type);
+			billservice.saveVisitPass(pass);
+			
+			
+			
+
+			
+		}
+		if(type.equalsIgnoreCase("monthlypass"))
+		{
+			System.out.println("welcome in monthly pass  mpasstype");
+			
+			String mpass=request.getParameter("mpasstype");
+			double price=Double.parseDouble(request.getParameter("mamount"));
+			MonthlyPass pass=new MonthlyPass();
+			System.out.println(mpass);
+			pass.setMonpasstype(mpass);
+			pass.setPrice(price);
+			pass.setType(type);
+			billservice.saveMonthlyPass(pass);
+			
+			
+			
+			
+			
+
+			
+		}
+		if(type.equalsIgnoreCase("birthday"))
+		{
+			
+			System.out.println("welcome in bithday ");
+			
+			
+			String pack=request.getParameter("package");
+			double price=Double.parseDouble(request.getParameter("bamount"));
+			
+			BirthdayPackage b=new BirthdayPackage();
+			b.setPackagetype(pack);
+			b.setPrice(price);
+			b.setType(type);
+			billservice.saveBirthday(b);
+			
+		}
+		if(type.equalsIgnoreCase("rock"))
+		{
+			
+			
+			int attempt=Integer.parseInt(request.getParameter("attempts"));
+			double price=Double.parseDouble(request.getParameter("aamount"));
+			Rock r=new Rock();
+			r.setAttempts(attempt);
+			r.setPrice(price);
+			r.setType(type);
+			billservice.saveAttempts(r);
+			
+		}
+		
+		return "";
+	}
+	
+	
+	
+	@RequestMapping(value="saveBill",method = RequestMethod.POST)
+	@ResponseBody
+    public String saveBill(HttpServletRequest httpServletRequest, Model uiModel) {
+	  	String billtime=httpServletRequest.getParameter("billtime");
+	  	String billnoOfChild=httpServletRequest.getParameter("billnoOfChild");
+	  	String billnoOfAdult=httpServletRequest.getParameter("billnoOfAdult");
+	  	String billnoOfAttempt=httpServletRequest.getParameter("billnoOfAttempt");
+	  	String billtype=httpServletRequest.getParameter("billtype");
+	  	String billPassType=httpServletRequest.getParameter("billPassType");
+	  	String billamount=httpServletRequest.getParameter("billamount");
+	  	
+	  	
+	  	
+	  	String AllBillAmount=httpServletRequest.getParameter("AllBillAmount");
+	  	String osfhandling=httpServletRequest.getParameter("osfhandling");
+	  	
+	  	String discount=httpServletRequest.getParameter("discount");
+	  	String othercharge=httpServletRequest.getParameter("othercharge");
+	  	String servicetax=httpServletRequest.getParameter("servicetax");
+	  	String paidamt=httpServletRequest.getParameter("paidamt");
+	  	String datepicker=httpServletRequest.getParameter("datepicker");
+	  	
+	  	String hiddenCustId=httpServletRequest.getParameter("hiddenCustId");
+	  	
+	  	
+	  	String paymentchequeNo = httpServletRequest.getParameter("paymentchequeNo");
+	  	String paymentchequeBank =httpServletRequest.getParameter("paymentchequeBank");
+	  	
+	  	String passNumber =httpServletRequest.getParameter("passNumber");
+	  	
+	  	String countryCodeMob1 =httpServletRequest.getParameter("countryCodeMob1");
+	  	String countryCodeMob2 =httpServletRequest.getParameter("countryCodeMob2");
+	  	
+	  	
+	  	System.out.println(hiddenCustId  +"   hiddenCustId");
+	  	
+	  	String billtimespl[]=billtime.split(",");
+	  	String billnoOfChildspl[]=billnoOfChild.split(",");
+	  	String billnoOfAdultspl[]=billnoOfAdult.split(",");
+	  	String billnoOfAttemptspl[]=billnoOfAttempt.split(",");
+	  	String billtypspl[]=billtype.split(",");
+	  	String billPassTypespl[]=billPassType.split(",");
+	  	String billamountspl[]=billamount.split(",");
+	  	String passNumberspl[]=passNumber.split(",");
+	  	
+	  	
+	  	
+	  	/*Customer Detail*/
+	  	
+	  String cname=	httpServletRequest.getParameter("cname");
+	  String lname=	httpServletRequest.getParameter("lname");
+	  String fathername=	httpServletRequest.getParameter("fathername");
+	  String mothername=	httpServletRequest.getParameter("mothername");
+	  String mno1=	httpServletRequest.getParameter("mno1");
+	  String mno2=	httpServletRequest.getParameter("mno2");
+	  String email=	httpServletRequest.getParameter("email");
+	  String datepicker1 =httpServletRequest.getParameter("datepicker1");
+	  String address=	httpServletRequest.getParameter("address");
+	  String locality=httpServletRequest.getParameter("locality");
+	  int bookId=Integer.parseInt(httpServletRequest.getParameter("bookingId"));
+	  
+	  System.out.println("booking id"+bookId);
+	  System.out.println("total"+billamount);
+	  
+	  	Bill bill =new Bill();
+	   Customer customer =new Customer();
+	   AdvanceBooking book=null;
+		double paidAmount=0;
+		double totalAmount=0;
+		double remainingAmt=0;
+		
+	  if( bookId !=0)
+	  {
+		  
+		  
+		  	    book=  birthdayservice.getBookingObjectById(bookId);
+	            paidAmount=book.getPaidAmount();
+		       
+		      
+		  	    int id=book.getBookingId();
+		        birthdayservice.updateBookingStatut(id);
+		        
+	  }
+	  
+                    remainingAmt=((Double.parseDouble(AllBillAmount))-(paidAmount));
+	  
+	  
+	  	
+	  	customer.setAddress(address);
+  		customer.setChildname(cname);
+  		customer.setLastName(lname);
+  		customer.setEmail(email);
+  		customer.setMotherName(mothername);
+  		customer.setMob1(mno1);
+  		try{
+  			if(mno2.equalsIgnoreCase("undefined")){
+  	  			
+  	  		}else{
+  	  			customer.setMob2(mno2);	
+  	  		}	
+  		}catch(Exception e){
+  			
+  		}
+  		
+  		
+  		customer.setLastName(lname);
+  		customer.setFatherName(fathername);
+  		customer.setCountryCodeMobile1(countryCodeMob1);
+  		customer.setCountryCodeMobile2(countryCodeMob2);
+  		
+  		
+  		Locality actlocality =new Locality();
+  		actlocality.setId(Integer.parseInt(locality));
+  		customer.setLocality(actlocality);
+  		
+  		
+  		SimpleDateFormat	formatter = new SimpleDateFormat("dd/MM/yyyy");
+	  	Date convertedDate=null;
+		try
+		{
+			convertedDate = (Date) formatter.parse(datepicker1);
+			customer.setDob(convertedDate);
+			
+			
+		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+  		
+	  	if(Integer.parseInt(hiddenCustId)!=0){
+	  		
+	  		customer.setCid(Integer.parseInt(hiddenCustId));
+	  	}
+	  	
+	  	/*create new 	bill object*/
+	  	//Bill bill =new Bill();
+	  
+	  	/*construct and save bill*/
+	  	
+	  	formatter = new SimpleDateFormat("dd/MM/yyyy");
+	  	 convertedDate=null;
+		try
+		{
+			convertedDate = (Date) formatter.parse(datepicker);
+			bill.setBill_Date(convertedDate);
+			customer.setLastComingDate(convertedDate);
+			
+		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+		try
+		{
+			bill.setBill_amount(Double.parseDouble(AllBillAmount));	
+		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+		try
+		{
+			bill.setOsfhandling(Double.parseDouble(osfhandling));	
+		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+		try
+		{
+			bill.setBill_discount(Double.parseDouble(discount));	
+		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+		try
+		{
+			bill.setBill_other(Double.parseDouble(othercharge));	
+		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+		try
+		{
+
+			if(bookId !=0)
+			{
+				
+				bill.setBill_paid(remainingAmt);
+			}
+			else{
+				
+				     bill.setBill_paid(Double.parseDouble(paidamt));
+			}
+			
+		  		
+		}catch(Exception e){
+  			e.printStackTrace();
+  		}
+		
+	  	
+	  	try{
+	  		int serviceId =taxService.getServicetaxByTax(Double.parseDouble("14.5"));
+		  	ServiceTax tax=new ServiceTax();
+		  	tax.setId(serviceId);
+		  	bill.setServiceTax(tax);
+		  		
+	  	}catch(Exception e){
+	  		e.printStackTrace();
+	  	}
+	  
+	  	bill.setCust(customer);
+	  	
+	  	String payType=httpServletRequest.getParameter("payMode");
+	  	
+	  	int billid= billservice.billsave(bill);
+	  	
+	  	/*save Bill details*/
+	  	/*paymentchequeAmount  paymentcash*/
+	  	
+	 	billservice.saveBillDetails(bill,billtimespl,billnoOfChildspl,billnoOfAdultspl,billnoOfAttemptspl,billtypspl,billPassTypespl,billamountspl,passNumberspl,payType);
+	 	billservice.saveBillPaymentDetails(bill,paidamt,paymentchequeNo,paymentchequeBank,payType );
+	 	
+	 	Bill ob= billservice.getBillById(billid+"");
+	 	return billid+"/"+ob.getCust().getCid()+"";
+	
+	}
+	
+	@RequestMapping(value="/printBill", method = RequestMethod.POST)
+	 public ModelAndView printBill(@RequestParam("billID") String id, ModelMap model)
+	 {
+		Bill bill=billservice.getBillById(id);
+		List<BillDetails>billDetails= billservice.getBillDetailsById(id);
+		List<BillPaymentDetails> billPaymentDetails= billservice.getBillPaymentDetailsById(id);
+		 model.addAttribute("billObj",bill);
+		 model.addAttribute("billdetailsObj",billDetails);
+		 model.addAttribute("billPaymentObj",billPaymentDetails);
+		 
+		 double billAmount =bill.getBill_amount();
+		 if(billAmount!=0){
+		 double servTax14Point5=billAmount*14.5/100;
+		 double servTax14=billAmount*14/100;
+		 double servTaxPoint5= servTax14Point5-servTax14;
+		 
+		 model.addAttribute("servTax14",servTax14);
+		 DecimalFormat df = new DecimalFormat("#.##");
+		 
+		 model.addAttribute("servTaxPoint5",df.format(servTaxPoint5));
+		 }
+		return new ModelAndView("billPrint");
+	 }
+	
+	
+	@RequestMapping(value="updateBill",method=RequestMethod.POST)
+	@ResponseBody
+	public String updateBill(@RequestParam("id") String id,@RequestParam("time")
+	String time,@RequestParam("amount") String amount,@RequestParam("type")
+	String type,org.springframework.ui.Model model)
+	{
+		int id1=Integer.parseInt(id);
+		double price=Double.parseDouble(amount);
+		
+		
+		
+		if(type.equalsIgnoreCase("playzone"))
+		{
+				System.out.println("update playzone");
+				Playzone p=new Playzone();
+				System.out.println(price);
+				p.setPlayzoneId(id1);
+				p.setPrice(price);
+				p.setTime(time);
+				p.setType(type);
+				billservice.updatePlayzone(p);
+				
+			
+		}
+		if(type.equalsIgnoreCase("rclimbing"))
+		{
+			
+			Rclimbing rc=new Rclimbing();
+			rc.setRclimbingId(id1);
+			rc.setPrice(price);
+			rc.setTime(time);
+			rc.setType(type);
+			billservice.updateRclimbing(rc);
+			
+			
+			
+		}
+		
+			
+		return "";
+	}
+	
+	@RequestMapping(value="visitupdateBill",method=RequestMethod.POST)
+	@ResponseBody
+	public String visitBillUpdate(@RequestParam("id") String id,@RequestParam("passtype")
+	String passtype,@RequestParam("amount") String amount,@RequestParam("type")
+	String type,org.springframework.ui.Model model)
+	{
+		int id1=Integer.parseInt(id);
+		double price=Double.parseDouble(amount);
+		
+		VisitPass p=new VisitPass();
+		p.setVisitpassId(id1);
+		p.setPrice(price);
+		p.setPassTypa(passtype);
+		p.setType(type);
+		billservice.updateVisitpass(p);
+		
+		return "";
+	}
+	
+	
+	@RequestMapping(value="monthlyupdateBill",method=RequestMethod.POST)
+	@ResponseBody
+	public String monthlyupdateBill(@RequestParam("id") String id,@RequestParam("passtype")
+	String passtype,@RequestParam("amount") String amount,@RequestParam("type")
+	String type,org.springframework.ui.Model model)
+	{
+		
+		
+		System.out.println("welcome in monthly pass");
+		
+		
+		return "";
+	}
+	
+	
+	@RequestMapping(value="birthdayupdateBill",method=RequestMethod.POST)
+	@ResponseBody
+	public String birthdayupdateBill(@RequestParam("id") String id,@RequestParam("packtype")
+	String packtype,@RequestParam("amount") String amount,@RequestParam("type")
+	String type,org.springframework.ui.Model model)
+	{
+		
+		System.out.println("welcome in birthday update");
+		
+		
+		int id1=Integer.parseInt(id);
+		double price=Double.parseDouble(amount);
+		
+		BirthdayPackage b=new BirthdayPackage();
+		b.setBirthdayId(id1);
+		b.setPackagetype(packtype);
+		b.setPrice(price);
+		b.setType(type);
+		billservice.updateBirthday(b);
+		
+		
+		
+		
+		return "";
+	}
+	
+	
+	@RequestMapping(value="rockupdateBill",method=RequestMethod.POST)
+	@ResponseBody
+	public String rockupdateBill(@RequestParam("id") String id,@RequestParam("attempt")
+	String attempt,@RequestParam("amount") String amount,@RequestParam("type")
+	String type,org.springframework.ui.Model model)
+	{
+		
+		System.out.println("welcome in birthday update");
+		
+		
+		int id1=Integer.parseInt(id);
+		double price=Double.parseDouble(amount);
+		int attempt1=Integer.parseInt(attempt);
+		Rock r=new Rock();
+		r.setAttempId(id1);
+		r.setAttempts(attempt1);
+		r.setPrice(price);
+		r.setType(type);
+		billservice.updateRockwall(r);
+		
+		
+		
+		
+		
+		
+		return "";
+	}
+	
+
+
+	
+	
+	@RequestMapping(value = "serviceTax", method = RequestMethod.GET)
+	public ModelAndView Servicetax(HttpServletRequest request,org.springframework.ui.Model model) {
+
+		System.out.println("welcom service tax");
+		 List<ServiceTax>serviceList=billservice.getServiceTaxList();
+		 model.addAttribute("serviceList", serviceList);
+		 return new ModelAndView("ServiceTax");
+	}
+	
+	
+	@RequestMapping(value="/fillServiceTax" ,method=RequestMethod.GET)
+	@ResponseBody
+	public String saveSarviceTax(HttpServletRequest request,org.springframework.ui.Model model)
+	{
+		
+		
+		System.out.println("welcome swervuiver taxxx");
+		String tax=request.getParameter("stax");
+		double d=Double.parseDouble(tax);
+		ServiceTax t=new ServiceTax();
+		t.setTax(d);
+		t.setStatus(0);
+		billservice.saveTax(t);
+		
+		return "";
+		
+		
+	}
+	
+	
+	@RequestMapping(value="/activate" ,method=RequestMethod.GET)
+	@ResponseBody
+	public String serviceTaxActivate(@RequestParam("tax") String tax,@RequestParam("active") String active,
+			HttpServletRequest request,org.springframework.ui.Model model)
+	{
+		
+		System.out.println(active+"in update");
+		int id=Integer.parseInt(active);
+		billservice.updateStatus(id);
+		
+		
+		
+		return "";
+		
+		
+	}
+	
+	
+	
+}
+	
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+	
+	/*@RequestMapping(value="assignPass",method=RequestMethod.POST)
+	@ResponseBody
+	public String assignPass(@RequestParam("startDate") String startDate,@RequestParam("type")
+	String type,@RequestParam("endDate") String endDate,@RequestParam("hidden")
+	String hidden, @RequestParam("cname") String cname,@RequestParam("lname") String lname,
+	@RequestParam("fathername") String fathername,@RequestParam("mothername") String mothername,
+	@RequestParam("email") String email,@RequestParam("mno1") String mno1,
+	@RequestParam("mno2") String mno2,@RequestParam("locality") String locality,
+	@RequestParam("address") String address,@RequestParam("datepicker12") String datepicker12,
+	org.springframework.ui.Model model)
+	{
+		
+		
+		long startdate=Date.parse(startDate);
+		long enddate=Date.parse(endDate);
+		Customer c=new Customer();
+	
+		
+		if(hidden.equalsIgnoreCase("visit"))
+		{
+			 
+			int flag=0;
+			
+			int visitId=billservice.getVisitPassListId(type);
+			VisitPass p=new VisitPass();
+			p.setVisitpassId(visitId);
+			VisitPassAssignmen vass=new VisitPassAssignmen();
+			
+			
+		
+			String val=mno1;
+			List<Customer> clist=customerservice.getListOfCustomer();
+			for (Customer customer : clist) {
+				if(customer.getMob1().equals(val))
+				{
+					
+					flag=1;
+					c=customer;
+				}
+			}
+			
+			if(flag==1)
+			{
+				System.out.println("customer allready registered");
+				
+				vass.setStartDate(new Date(startdate));
+				vass.setEndDate(new Date(enddate));
+				vass.setCust(c);
+				vass.setPass(p);
+				billservice.saveVisitPassAssigment(vass);
+				
+				
+			}
+			
+			else
+			{
+				c.setChildname(cname);
+				c.setLastName(lname);
+				c.setFatherName(fathername);
+				c.setMotherName(mothername);
+				c.setEmail(email);
+				c.setMob1(mno1);
+				c.setMob2(mno2);
+				c.setLocality(locality);
+				c.setAddress(address);
+				long d=Date.parse(datepicker12);
+				c.setDob(new Date(d));
+				customerservice.saveCustomer(c);
+				System.out.println("data inserted");
+				int id=c.getCid();
+				System.out.println(c.getCid());
+				
+				vass.setStartDate(new Date(startdate));
+				vass.setEndDate(new Date(enddate));
+				vass.setCust(c);
+				vass.setPass(p);
+				billservice.saveVisitPassAssigment(vass);
+			
+				
+			
+				
+			}
+			
+		}
+		
+		if(hidden.equalsIgnoreCase("monthly"))
+		{
+			
+			
+			int flag=0;
+			int id=billservice.getMonthlyPassAssignId(type);
+			MonthlyPass m=new MonthlyPass();
+			m.setMpnthlyPassId(id);
+			MonthlyPassAssignment mp=new MonthlyPassAssignment();
+			
+			
+		
+			String val=mno1;
+			List<Customer> clist=customerservice.getListOfCustomer();
+			for (Customer customer : clist) {
+				if(customer.getMob1().equals(val))
+				{
+					System.out.println("all reasdy registered");
+					flag=1;
+					c=customer;
+					
+					
+				}
+				}
+			
+			if(flag==1)
+			{
+				System.out.println("customer allready registered");
+				mp.setStartDate(new Date(startdate));
+				mp.setEndDate(new Date(enddate));
+				mp.setCust(c);
+				mp.setPass(m);
+				billservice.saveMonthlyPassAssigment(mp);
+			}
+			
+			else
+			{
+			
+				
+			
+				c.setChildname(cname);
+				c.setLastName(lname);
+				c.setFatherName(fathername);
+				c.setMotherName(mothername);
+				c.setEmail(email);
+				c.setMob1(mno1);
+				c.setMob2(mno2);
+				c.setLocality(locality);
+				c.setAddress(address);
+				long d=Date.parse(datepicker12);
+				c.setDob(new Date(d));
+				customerservice.saveCustomer(c);
+				System.out.println("data inserted");
+				int id=c.getCid();
+				System.out.println(c.getCid());
+				
+				mp.setStartDate(new Date(startdate));
+				mp.setEndDate(new Date(enddate));
+				mp.setCust(c);
+				mp.setPass(m);
+				billservice.saveMonthlyPassAssigment(mp);
+			}
+			
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		return "";
+	}
+	
+	
+
+}
+*/

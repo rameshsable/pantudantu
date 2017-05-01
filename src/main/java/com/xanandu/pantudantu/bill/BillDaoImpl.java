@@ -1,0 +1,608 @@
+package com.xanandu.pantudantu.bill;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import javax.management.Query;
+import javax.transaction.Transaction;
+
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.support.CronTrigger;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.xanandu.pantudantu.model.Rock;
+import com.xanandu.pantudantu.model.ServiceTax;
+import com.xanandu.pantudantu.model.Bill;
+import com.xanandu.pantudantu.model.BillDetails;
+import com.xanandu.pantudantu.model.BillPayType;
+import com.xanandu.pantudantu.model.BillPaymentDetails;
+import com.xanandu.pantudantu.model.BirthdayPackage;
+import com.xanandu.pantudantu.model.Customer;
+import com.xanandu.pantudantu.model.MonthlyPass;
+import com.xanandu.pantudantu.model.MonthlyPassAssignment;
+import com.xanandu.pantudantu.model.Playzone;
+import com.xanandu.pantudantu.model.Rclimbing;
+import com.xanandu.pantudantu.model.UserModel;
+import com.xanandu.pantudantu.model.VisitPass;
+import com.xanandu.pantudantu.model.VisitPassAssignmen;
+
+
+@Repository("BillDao")
+public class BillDaoImpl implements BillDao{
+
+	@Autowired 
+	private SessionFactory sessionfactory;
+	@Autowired 
+	private BillService billService;;
+
+	@Override
+	public void savePlayzone(Playzone playzone) {
+		
+		Session session=sessionfactory.openSession();
+		session.save(playzone);
+		session.close();
+	
+}
+
+	@Override
+	public void saveRclimbing(Rclimbing rclimbing) {
+		
+		
+		Session session=sessionfactory.openSession();
+		session.save(rclimbing);
+		session.close();
+		
+	}
+
+	@Override
+	public void saveVisitPass(VisitPass visitpass) {
+
+		Session session=sessionfactory.openSession();
+		session.save(visitpass);
+		session.close();
+
+		
+		
+	}
+
+	@Override
+	public void saveMonthlyPass(MonthlyPass mpass) {
+		Session session=sessionfactory.openSession();
+		session.save(mpass);
+		session.close();
+
+	}
+
+	@Override
+	public void saveBirthday(BirthdayPackage bpack) {
+		Session session=sessionfactory.openSession();
+		session.save(bpack);
+		session.close();
+
+		
+	}
+
+	@Override
+	public void saveAttempts(Rock atmp) {
+		Session session=sessionfactory.openSession();
+		session.save(atmp);
+		session.close();
+		
+	}
+
+	
+	/*
+	Fetching data*/
+	
+	
+	@Override
+	public List<Playzone> getListOfPlayzone() {
+		
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(Playzone.class);
+		List<Playzone> playzonelist=criteria.list();
+		session.close();
+		return playzonelist;
+	}
+
+	@Override
+	public List<Rclimbing> getListOfRclimbing() {
+		
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(Rclimbing.class);
+		List<Rclimbing>rclimbinglist=criteria.list();
+		session.close();
+		
+		
+		return rclimbinglist;
+	}
+
+	@Override
+	public List<VisitPass> getListOfVisitPass() {
+		
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(VisitPass.class);
+		List<VisitPass>visitpasslist=criteria.list();
+		session.close();
+		
+		return visitpasslist;
+	}
+
+	@Override
+	public List<MonthlyPass> getListOfMonthlypass() {
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(MonthlyPass.class);
+		List<MonthlyPass>monthlypasslist=criteria.list();
+		session.close();
+		return monthlypasslist;
+	}
+
+	@Override
+	public List<BirthdayPackage> getListOfBirthday() {
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(BirthdayPackage.class);
+		List<BirthdayPackage>birthdatlist=criteria.list();
+		session.close();
+		return birthdatlist;
+	}
+
+	@Override
+	public List<Rock> getListOfRock() {
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(Rock.class);
+		List<Rock>rockList=criteria.list();
+		session.close();
+		return rockList;
+	}
+
+	
+	/*
+	updating section*/
+		
+		
+		
+		
+	
+
+	@Override
+	public void updatePlayzone(Playzone p) {
+		double price=p.getPrice();
+		int playzoneId=p.getPlayzoneId();
+		Session session=sessionfactory.openSession();
+		org.hibernate.Query query=session.createQuery("update Playzone set price= :price where playzoneId= :playzoneId ");
+		query.setParameter("price", price);
+		query.setParameter("playzoneId", playzoneId);
+		query.executeUpdate();
+		session.close();
+	}
+
+	@Override
+	public void updateRclimbing(Rclimbing rc) {
+		double price=rc.getPrice();
+		int rclimbingId=rc.getRclimbingId();
+		
+		Session session=sessionfactory.openSession();
+		org.hibernate.Query query=session.createQuery("update Rclimbing set price= :price where rclimbingId= :rclimbingId ");
+		query.setParameter("price",price);
+		query.setParameter("rclimbingId", rclimbingId);
+		query.executeUpdate();
+		session.close();
+		
+
+		
+	}
+
+	@Override
+	public void updateVisitpass(VisitPass pass) {
+		double price=pass.getPrice();
+		int visitpassId=pass.getVisitpassId();
+		Session session=sessionfactory.openSession();
+		org.hibernate.Query query=session.createQuery("update  VisitPass set price= :price where visitpassId= :visitpassId");
+		query.setParameter("price", price);
+		query.setParameter("visitpassId",visitpassId);
+		query.executeUpdate();
+		session.close();
+		
+	}
+
+	@Override
+	public void updateMonthlypass(MonthlyPass m) {
+		System.out.println("hreeee");
+		double price=m.getPrice();
+		int mpnthlyPassId=m.getMpnthlyPassId();
+		
+		
+	Session session=sessionfactory.openSession();
+	org.hibernate.Query query=session.createQuery("update  MonthlyPass set price= :price where mpnthlyPassId= :mpnthlyPassId");
+	query.setParameter("price",price);
+	query.setParameter("mpnthlyPassId", mpnthlyPassId);
+	query.executeUpdate();
+	session.close();
+		
+		
+		
+		
+		
+	}
+
+	@Override
+	public void updateBirthday(BirthdayPackage b) {
+		
+		double price=b.getPrice();
+		int birthdayId=b.getBirthdayId();
+		
+		Session session=sessionfactory.openSession();
+		org.hibernate.Query query=session.createQuery("update  BirthdayPackage set price= :price where birthdayId= :birthdayId");
+		query.setParameter("price",price);
+		query.setParameter("birthdayId", birthdayId);
+		query.executeUpdate();
+		session.close();
+		
+		
+	}
+
+	@Override
+	public void updateRockwall(Rock r) {
+		
+		double price=r.getPrice();
+		int attempId=r.getAttempId();
+		System.out.println(r.getPrice()+"price in rock");
+		Session session=sessionfactory.openSession();
+		org.hibernate.Query query=session.createQuery("update  Rock set price= :price where attempId= :attempId");
+		query.setParameter("price",price);
+		query.setParameter("attempId", attempId);
+		query.executeUpdate();
+		session.close();
+		
+		
+	}
+
+	@Override
+	public int saveVisitPassAssigment(VisitPassAssignmen a) {
+
+		Session session=sessionfactory.openSession();
+		Integer id =(Integer) session.save(a);
+		
+		session.beginTransaction().commit();
+		session.close();
+		return id;
+		
+	}
+
+	@Override
+	public int getVisitPassListId(String type) {
+		
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(VisitPass.class);
+		criteria.add(Restrictions.eq("visitpassId", type));
+		VisitPass pass=	(VisitPass) criteria.uniqueResult();
+	 return   pass.getVisitpassId();
+	
+	}
+
+	@Override
+	public int saveMonthlyPassAssigment(MonthlyPassAssignment m) {
+		
+		Session session=sessionfactory.openSession();
+		Integer id =(Integer)  session.save(m);
+		session.beginTransaction().commit();
+		session.close();
+		
+		System.out.println(id+"  nikhil id");
+		return id;
+	}
+
+	@Override
+	public int getMonthlyPassAssignId(String type) {
+		// TODO Auto-generated method stub
+		
+		System.out.println("inside pass "+type);
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(MonthlyPass.class);
+		criteria.add(Restrictions.eq("monpasstype", type));
+		MonthlyPass  pass=	(MonthlyPass) criteria.uniqueResult();
+		return pass.getMpnthlyPassId();
+	}
+
+	@Override
+	public void saveTax(ServiceTax t) {
+	
+		
+		System.out.println("save tax");
+		Session session=sessionfactory.openSession();
+		session.save(t);
+		session.close();
+		
+	}
+
+	@Override
+	public List<ServiceTax> getServiceTaxList() {
+		
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(ServiceTax.class);
+		List<ServiceTax>serviceList=criteria.list();
+		session.close();
+		return serviceList;
+		
+	}
+
+	@Override
+	public void updateStatus(int s) {
+			Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(ServiceTax.class);
+		criteria.add(Restrictions.eq("status", 1));
+		
+		ServiceTax serviceTax = (ServiceTax) criteria.uniqueResult();
+		
+		if(serviceTax!=null){
+			serviceTax.setStatus(0);
+			session.update(serviceTax);
+		}
+		
+		
+		System.out.println("id issss"+serviceTax.getId());
+		
+
+		ServiceTax serviceTax2 =(ServiceTax) session.get(ServiceTax.class, s);
+		serviceTax2.setStatus(1);
+		System.out.println(serviceTax2.getTax()+"  tax");
+		session.update(serviceTax2);
+		session.beginTransaction().commit();
+		session.close();
+	
+		
+		
+		
+		
+		
+	}
+
+	@Override
+	public int billsave(Bill bill) {
+		System.out.println("save tax");
+		Session session=sessionfactory.openSession();
+		Customer customer = bill.getCust();
+		//customer.setDob(bill.getCust().getDob());
+		
+		System.out.println(bill.getCust().getDob() +"   date");
+		session.saveOrUpdate(customer);
+		bill.setCust(customer);
+		Integer integer=	(Integer) session.save(bill);
+		
+		System.out.println(integer +"   cust id");
+		session.beginTransaction().commit();
+		session.close();
+		return integer;
+	}
+
+	@Override
+	public void saveBillDetails(Bill bill, String[] billtimespl, String[] billnoOfChildspl, String[] billnoOfAdultspl, String[] billnoOfAttemptspl, String[] billtypspl, String[] billPassTypespl, String[] billamountspl, String[] passNumberspl,String payType ) {
+		// TODO Auto-generated method stub
+		Session session=sessionfactory.openSession();
+	
+		int  i=0;
+		for(String  billt  : billtimespl ){
+		if(i==0){
+			
+		}else{
+			BillDetails billDetails =new  BillDetails();
+			
+			
+			if(billnoOfAdultspl[i].equals(0)|| billnoOfAdultspl[i].equals("-")){
+				billDetails.setAdult(0);	
+			}else{
+				try{
+					billDetails.setAdult(Integer.parseInt(billnoOfAdultspl[i]));
+				}catch(Exception e){
+					
+				}
+					
+			}
+			if(billamountspl[i].equals(0)||billamountspl[i].equals("-")){
+				billDetails.setAmount(0);	
+			}else{
+				try{
+					billDetails.setAmount(Double.parseDouble(billamountspl[i]));
+				}catch(Exception e){
+					
+				}
+				
+			}
+			if(billnoOfChildspl[i].equals(0)||billnoOfChildspl[i].equals("-")){
+				billDetails.setChild(0);	
+			}else{
+				try{
+					billDetails.setChild(Integer.parseInt(billnoOfChildspl[i]));
+				}catch(Exception e){
+					
+				}
+				
+			}
+			
+			try{
+				billDetails.setAttempt(billnoOfAttemptspl[i]);
+			}catch(Exception e){
+				
+			}
+			
+		
+			billDetails.setBill(bill);
+			
+			
+			
+			
+			List<BillPayType> billPayTypes=billService.getbillPayTypeList();
+			String string=billtypspl[i];
+			if(string.equalsIgnoreCase("visitpass")){
+				string="visitpass";
+			}else if(string.equalsIgnoreCase("monthlypass")){
+				string="monthlypass";			
+			}else if(string.equalsIgnoreCase("birthdaypackage")){
+				string="birthdaypackage";
+			}else if(string.equalsIgnoreCase("playzone")){
+				string="playZone";
+			}else if(string.equalsIgnoreCase("prclimbing")){
+				string="playrclimbing";
+			}else if(string.equalsIgnoreCase("rockwall")){
+				string="rockwall";
+			}
+			System.out.println(string +"   string");
+			System.out.println("list size  "+billPayTypes.size());
+			for (BillPayType billPayType2 : billPayTypes) {
+				String s=billPayType2.getType();
+				System.out.println(s +" billPayType2");
+				if(s.equalsIgnoreCase(string)){
+					billDetails.setBillPayType(billPayType2);
+					System.out.println(s +" billPayType2  billDetails  ");
+					break;
+				}
+			}
+		
+			
+			
+			
+			billDetails.setPasstype(billPassTypespl[i]);
+			billDetails.setTot_time(billtimespl[i]);
+			
+			System.out.println("passNumberspl[i]  "+passNumberspl[i]+"   billtypspl[i]   "+billtypspl[i]);
+			
+			if(!passNumberspl[i].equalsIgnoreCase("-")){
+				if(billtypspl[i].equalsIgnoreCase("visitpass")){
+					VisitPassAssignmen assignmen=new VisitPassAssignmen();
+					assignmen.setVid(Integer.parseInt(passNumberspl[i]));
+					billDetails.setVisitPassAssignmen(assignmen);
+					
+				}if(billtypspl[i].equalsIgnoreCase("monthly Pass")){
+					MonthlyPassAssignment assignment =new  MonthlyPassAssignment();
+					assignment.setId(Integer.parseInt(passNumberspl[i]));
+					billDetails.setMonthlyPassAssignment(assignment);		
+				}
+			}
+			
+			session.save(billDetails);
+			
+			session.beginTransaction().commit();
+
+		}
+			i++;
+		}
+		
+		/*
+		BillDetails billDetails =new  BillDetails();
+		billDetails.setAdult(adult);
+		billDetails.setAmount(amount);
+		billDetails.setAttempt(attempt);
+		billDetails.setBill(bill);
+		billDetails.setChild(child);
+		billDetails.setBillPayType(billPayType);
+		billDetails.setPasstype(passtype);
+		billDetails.setTot_time(tot_time);*/
+		
+		
+		session.close();
+	}
+	@Override
+	public void saveBillPaymentDetails(Bill bill, String paymentamount, String paymentchequeNo, String paymentchequeBank, String paymentType ){
+		Session session=sessionfactory.openSession();
+		
+			BillPaymentDetails paymentDetails =new BillPaymentDetails();
+			paymentDetails.setBill(bill);
+			paymentDetails.setPaid_amount(paymentamount);
+			paymentDetails.setPaid_type(paymentType);
+			paymentDetails.setBankname(paymentchequeBank);
+			paymentDetails.setCheque_number(paymentchequeNo);
+			paymentDetails.setPaid_date(bill.getBill_Date());
+			session.save(paymentDetails);
+			session.beginTransaction().commit();
+		
+	}
+
+	@Override
+	public List<BillPayType> getbillPayTypeList() {
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(BillPayType.class);
+		List<BillPayType> billPayTypes=criteria.list();
+		session.close();
+		return billPayTypes;
+	}
+
+	@Override
+	public Bill getBillById(String billId) {
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(Bill.class);
+		criteria.add(Restrictions.eq("bill_Id",Integer.parseInt(billId)));
+		Bill bill=(Bill) criteria.uniqueResult();
+		session.close();
+		return bill;
+	}
+
+	@Override
+	public List<BillDetails> getBillDetailsById(String billId) {
+		Bill bill =new Bill();
+		bill.setBill_Id(Integer.parseInt(billId));
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(BillDetails.class);
+		criteria.add(Restrictions.eq("bill",bill));
+		 List<BillDetails> billdetails=criteria.list();
+		session.close();
+		return billdetails;
+	}
+
+	@Override
+	public List<BillPaymentDetails> getBillPaymentDetailsById(String billId) {
+		Bill bill =new Bill();
+		bill.setBill_Id(Integer.parseInt(billId));
+		Session session=sessionfactory.openSession();
+		Criteria criteria=session.createCriteria(BillPaymentDetails.class);
+		criteria.add(Restrictions.eq("bill",bill));
+		 List<BillPaymentDetails> billpaydetails=criteria.list();
+		session.close();
+		return billpaydetails;
+	}
+
+	@Override
+	public void addBillPayType(String PayType) {
+		// TODO Auto-generated method stub
+		Session session=sessionfactory.openSession();
+		BillPayType billPayType =new BillPayType();
+		billPayType.setType(PayType);
+		
+		session.save(billPayType);
+		session.beginTransaction().commit();
+		session.close();
+	}
+
+	@Override
+	public void saveBillDetailByBillDetailObj(BillDetails billDetails) {
+		Session session=sessionfactory.openSession();
+		session.save(billDetails);
+		session.beginTransaction().commit();
+		session.close();
+	}
+
+	@Override
+	public void saveBillPaymentByBillPaymentObj(BillPaymentDetails billPaymentDetails) {
+		// TODO Auto-generated method stub
+		Session session=sessionfactory.openSession();
+		session.save(billPaymentDetails);
+		session.beginTransaction().commit();
+		session.close();
+	}
+	
+	
+	
+	
+	
+}

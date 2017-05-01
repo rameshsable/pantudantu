@@ -1,0 +1,737 @@
+package com.xanandu.pantudantu.birthday;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.hibernate.SQLQuery;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.xanandu.pantudantu.bill.BillService;
+import com.xanandu.pantudantu.customer.CustomerService;
+import com.xanandu.pantudantu.model.AdvanceBooking;
+import com.xanandu.pantudantu.model.AdvanceBookingPaymentDetails;
+import com.xanandu.pantudantu.model.AdvanceBookingPospond;
+import com.xanandu.pantudantu.model.Bill;
+import com.xanandu.pantudantu.model.BillDetails;
+import com.xanandu.pantudantu.model.BillPayType;
+import com.xanandu.pantudantu.model.BirthdayPackage;
+import com.xanandu.pantudantu.model.Customer;
+import com.xanandu.pantudantu.model.Locality;
+import com.xanandu.pantudantu.model.MonthlyPass;
+import com.xanandu.pantudantu.model.MonthlyPassAssignment;
+import com.xanandu.pantudantu.model.Permission;
+import com.xanandu.pantudantu.model.PermissionTypeId;
+import com.xanandu.pantudantu.model.ServiceTax;
+import com.xanandu.pantudantu.model.VisitPass;
+import com.xanandu.pantudantu.model.VisitPassAssignmen;
+import com.xanandu.pantudantu.pass.PassService;
+import com.xanandu.pantudantu.servicetax.ServiceTaxService;
+
+@Controller
+public class BirthdayController {
+	@Autowired
+	CustomerService customerservice;
+	@Autowired
+	BillService billservice;
+	@Autowired
+	PassService passservice;
+	@Autowired
+	BirthdayService birthdayservice;
+	@Autowired
+	SessionFactory fact;
+	@Autowired
+	private SessionFactory sessionfactory;
+	@Autowired
+	ServiceTaxService taxService;
+
+	@RequestMapping(value = "advanceBooling", method = RequestMethod.GET)
+	public ModelAndView login(HttpServletRequest request, org.springframework.ui.Model model) {
+
+		List<Customer> customerlist = customerservice.getListOfCustomer();
+		List<Locality> localities = customerservice.getLocality();
+		List<BirthdayPackage> birthdaylist = billservice.getListOfBirthday();
+
+		model.addAttribute("localities", localities);
+		model.addAttribute("customerlist", customerlist);
+		model.addAttribute("birthdaylist", birthdaylist);
+
+		return new ModelAndView("Booking");
+	}
+
+	/*
+	 * @RequestMapping(value="advaceBooking",method=RequestMethod.POST)
+	 * 
+	 * @ResponseBody public String assignPass( @RequestParam("cname") String
+	 * cname,@RequestParam("lname") String lname,
+	 * 
+	 * @RequestParam("fathername") String fathername,@RequestParam("mothername")
+	 * String mothername,
+	 * 
+	 * @RequestParam("email") String email,@RequestParam("mno1") String mno1,
+	 * 
+	 * @RequestParam("mno2") String mno2,@RequestParam("locality") String
+	 * locality,
+	 * 
+	 * @RequestParam("address") String address,@RequestParam("datepicker12")
+	 * String datepicker12,
+	 * 
+	 * @RequestParam("packageName") String packageName,@RequestParam("date")
+	 * String date,
+	 * 
+	 * @RequestParam("startTime") String startTime,@RequestParam("endTime")
+	 * String endTime,@RequestParam("child") String
+	 * child,@RequestParam("adults") String
+	 * adults,@RequestParam("totalAmount")String totalAmount,
+	 * 
+	 * @RequestParam("paidAmount")String paidAmount,@RequestParam("id1")String
+	 * id1,
+	 * 
+	 * org.springframework.ui.Model model) {
+	 * 
+	 * 
+	 * 
+	 * System.out.println("Welcome ramesh"); String string=null; int
+	 * idd=Integer.parseInt(id1); int packgeId=Integer.parseInt(packageName);
+	 * int childs=Integer.parseInt(child); int adult=Integer.parseInt(adults);
+	 * double total=Double.parseDouble(totalAmount); double
+	 * paidamt=Double.parseDouble(paidAmount); long d=Date.parse(date);
+	 * 
+	 * SimpleDateFormat dateFormat =new SimpleDateFormat("dd/MM/yyyy"); Date
+	 * date2 = null; try { date2 =dateFormat.parse(date); } catch
+	 * (ParseException e1) { // TODO Auto-generated catch block
+	 * e1.printStackTrace(); }
+	 * 
+	 * 
+	 * long dob=Date.parse(datepicker12); java.sql.Time sstime=null ;
+	 * java.sql.Time eetime=null ; Locality loc=new Locality();
+	 * loc.setId(Integer.parseInt(locality));
+	 * 
+	 * 
+	 * try { SimpleDateFormat df=new SimpleDateFormat("HH:mm"); Date ddq=null;
+	 * ddq=df.parse(startTime); sstime= new java.sql.Time(ddq.getTime()); Date
+	 * ddend=null; ddend=df.parse(endTime); eetime=new
+	 * java.sql.Time(ddend.getTime()); } catch(Exception e) { e.getMessage(); }
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * //new SimpleDateFormat("HH:mm").parse(time); Customer c=new Customer();
+	 * BirthdayPackage b=new BirthdayPackage();
+	 * 
+	 * AdvanceBooking booking=new AdvanceBooking();
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * if(idd !=0) {
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * System.out.println("user all ready registerd"); c.setCid(idd);
+	 * c.setChildname(cname); c.setLastName(lname); c.setFatherName(fathername);
+	 * c.setMotherName(mothername); c.setEmail(email); c.setMob1(mno1);
+	 * c.setMob2(mno2); c.setDob(new Date(dob)); c.setLocality(loc);
+	 * c.setAddress(address); customerservice.saveCustomer(c);
+	 * b=birthdayservice.getBirthdayId(packgeId);
+	 * 
+	 * booking.setCustomer(c); booking.setBirthdayPackage(b);
+	 * booking.setChild(childs); booking.setAdult(adult);
+	 * booking.setTotal(total); booking.setPaidAmount(paidamt);
+	 * booking.setDate(date2); booking.setStartTime(sstime);
+	 * booking.setEndTime(eetime); booking.setStatus("processing");
+	 * //birthdayservice.saveAdvanceBooking(booking); ///this is origibnal
+	 * bussiness logic string=birthdayservice.saveBooking(booking); }
+	 * 
+	 * else {
+	 * 
+	 * c.setCid(idd); c.setChildname(cname); c.setLastName(lname);
+	 * c.setFatherName(fathername); c.setMotherName(mothername);
+	 * c.setEmail(email); c.setMob1(mno1); c.setMob2(mno2); c.setDob(new
+	 * Date(dob)); c.setLocality(loc); c.setAddress(address);
+	 * customerservice.saveCustomer(c);
+	 * b=birthdayservice.getBirthdayId(packgeId);
+	 * 
+	 * 
+	 * booking.setCustomer(c); booking.setBirthdayPackage(b);
+	 * booking.setChild(childs); booking.setAdult(adult);
+	 * booking.setTotal(total); booking.setPaidAmount(paidamt);
+	 * booking.setDate(date2); booking.setStatus("processing");
+	 * booking.setStartTime(sstime); booking.setEndTime(eetime);
+	 * //birthdayservice.saveAdvanceBooking(booking);
+	 * string=birthdayservice.saveBooking(booking);
+	 * 
+	 * 
+	 * 
+	 * 
+	 * }
+	 * 
+	 * 
+	 * System.out.println(string);
+	 * 
+	 * 
+	 * return string; }
+	 */
+
+	// cash BankName checqueNum checkAmount creditAmount
+
+	@RequestMapping(value = "advaceBooking", method = RequestMethod.POST)
+	@ResponseBody
+	public ModelAndView assignPass(@RequestParam("cname") String cname, @RequestParam("lname") String lname,
+			@RequestParam("fathername") String fathername, @RequestParam("mothername") String mothername,
+			@RequestParam("email") String email, @RequestParam("mno1") String mno1, @RequestParam("mno2") String mno2,
+			@RequestParam("locality") String locality, @RequestParam("address") String address,
+			@RequestParam("datepicker12") String datepicker12, @RequestParam("packageName") String packageName,
+			@RequestParam("date") String date, @RequestParam("startTime") String startTime,
+			@RequestParam("endTime") String endTime, @RequestParam("child") String child,
+			@RequestParam("adults") String adults, @RequestParam("totalAmount") String totalAmount,
+			@RequestParam("paidAmount") String paidAmount, @RequestParam("id1") String id1,
+			@RequestParam("paymentchequeNo") String paymentchequeNo,
+			@RequestParam("paymentchequeBank") String paymentchequeBank, @RequestParam("payMode") String payMode,
+			@RequestParam("countryCodeMob1") String countryCodeMob1,
+			@RequestParam("countryCodeMob2") String countryCodeMob2,
+
+			org.springframework.ui.Model model) {
+
+		//
+
+		String string = null;
+		int idd = Integer.parseInt(id1);
+		int packgeId = Integer.parseInt(packageName);
+		int childs = Integer.parseInt(child);
+		int adult = Integer.parseInt(adults);
+		double total = Double.parseDouble(totalAmount);
+		double paidamt = Double.parseDouble(paidAmount);
+		long d = Date.parse(date);
+  System.out.println("inside id birthday controller"+id1);
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		Date date2 = null;
+		try {
+			date2 = dateFormat.parse(date);
+		} catch (ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		long dob = Date.parse(datepicker12);
+		java.sql.Time sstime = null;
+		java.sql.Time eetime = null;
+		Locality loc = new Locality();
+		loc.setId(Integer.parseInt(locality));
+
+		try {
+			SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+			Date ddq = null;
+			ddq = df.parse(startTime);
+			sstime = new java.sql.Time(ddq.getTime());
+			Date ddend = null;
+			ddend = df.parse(endTime);
+			eetime = new java.sql.Time(ddend.getTime());
+		} catch (Exception e) {
+			e.getMessage();
+		}
+
+		// new SimpleDateFormat("HH:mm").parse(time);
+		Customer c = new Customer();
+		BirthdayPackage b = new BirthdayPackage();
+
+		AdvanceBooking booking = new AdvanceBooking();
+
+		// Customer cust=new Customer();
+		//c = customerservice.getCustomerById(idd);
+
+		/* // bill section */
+
+		Bill bill = new Bill();
+		bill.setBill_amount(total);
+		bill.setBill_Date(new Date());
+		bill.setBill_discount(0);
+		bill.setBill_other(0);
+		bill.setBill_paid(paidamt);
+		//bill.setCust(c);
+		try {
+			int serviceId = taxService.getServicetaxByTax(Double.parseDouble("14.5"));
+			ServiceTax tax = new ServiceTax();
+			tax.setId(serviceId);
+			bill.setServiceTax(tax);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	//	billservice.billsave(bill);
+
+		if (idd != 0) {
+
+			System.out.println("user all ready registerd");
+			c.setCid(idd);
+			c.setChildname(cname);
+			c.setLastName(lname);
+			c.setFatherName(fathername);
+			c.setMotherName(mothername);
+			c.setEmail(email);
+			c.setMob1(mno1);
+			c.setMob2(mno2);
+			c.setDob(new Date(dob));
+			c.setLocality(loc);
+			c.setAddress(address);
+			c.setCountryCodeMobile1(countryCodeMob1);
+			c.setCountryCodeMobile2(countryCodeMob2);
+			c.setLastComingDate(new Date());
+			customerservice.saveCustomer(c);
+			bill.setCust(c);
+			
+			billservice.billsave(bill);
+			b = birthdayservice.getBirthdayId(packgeId);
+
+			booking.setCustomer(c);
+			booking.setBirthdayPackage(b);
+			booking.setChild(childs);
+			booking.setAdult(adult);
+			booking.setTotal(total);
+			booking.setPaidAmount(paidamt);
+			booking.setDate(date2);
+			booking.setStartTime(sstime);
+			booking.setEndTime(eetime);
+			booking.setStatus("processing");
+			booking.setBookingDate(new Date());
+			booking.setBill(bill);
+
+			// birthdayservice.saveAdvanceBooking(booking); ///this is origibnal
+			// bussiness logic
+			string = birthdayservice.saveBooking(booking);
+		}
+
+		else {
+
+			c.setCid(idd);
+			c.setChildname(cname);
+			c.setLastName(lname);
+			c.setFatherName(fathername);
+			c.setMotherName(mothername);
+			c.setEmail(email);
+			c.setMob1(mno1);
+			c.setMob2(mno2);
+			c.setDob(new Date(dob));
+			c.setLocality(loc);
+			c.setAddress(address);
+			c.setCountryCodeMobile1(countryCodeMob1);
+			c.setCountryCodeMobile2(countryCodeMob2);
+			c.setLastComingDate(new Date());
+			customerservice.saveCustomer(c);
+           bill.setCust(c);
+			
+			billservice.billsave(bill);
+			b = birthdayservice.getBirthdayId(packgeId);
+
+			booking.setCustomer(c);
+			booking.setBirthdayPackage(b);
+			booking.setChild(childs);
+			booking.setAdult(adult);
+			booking.setTotal(total);
+			booking.setPaidAmount(paidamt);
+			booking.setDate(date2);
+			booking.setStatus("processing");
+			booking.setStartTime(sstime);
+			booking.setEndTime(eetime);
+			booking.setBookingDate(new Date());
+			booking.setBill(bill);
+			// birthdayservice.saveAdvanceBooking(booking);
+			string = birthdayservice.saveBooking(booking);
+
+		}
+
+		model.addAttribute("modelstring", string);
+		model.addAttribute("booking", booking);
+
+		//
+
+		if (string.equalsIgnoreCase("success")) /// if string is success it
+												/// means that date and time is
+												/// available
+		{
+
+			AdvanceBookingPaymentDetails cashpay = new AdvanceBookingPaymentDetails();
+			cashpay.setPaidAmount(Double.parseDouble(paidAmount));
+			cashpay.setDate(new Date());
+			cashpay.setPaidType(payMode);
+			cashpay.setBooking(booking);
+			birthdayservice.saveAdvanceBookingPaymentDetails(cashpay);
+			String Attemptspl = "-";
+			String string1 = "birthdaypackage";
+			String passNumberspl = "-";
+			BillDetails bd = new BillDetails();
+			bd.setAdult(adult);
+			bd.setChild(childs);
+			bd.setAttempt(Attemptspl);
+			bd.setBill(bill);
+			bd.setAmount(total);
+			List<BillPayType> billPayTypes = billservice.getbillPayTypeList();
+
+			for (BillPayType billPayType1 : billPayTypes) {
+				String s = billPayType1.getType();
+				if (string1.equalsIgnoreCase(s)) {
+					bd.setBillPayType(billPayType1);
+				}
+			}
+
+			Session session = sessionfactory.openSession();
+			Transaction t = session.beginTransaction();
+			session.save(bd);
+			t.commit();
+			session.close();
+
+			System.out.println("object bd is saved");
+
+			billservice.saveBillPaymentDetails(bill, paidAmount, paymentchequeNo, paymentchequeBank, payMode);
+
+			/*
+			 * if(flagcheque==0) { AdvanceBookingPaymentDetails chequeAmt=new
+			 * AdvanceBookingPaymentDetails();
+			 * chequeAmt.setPaidAmount(Double.parseDouble(checkAmount));
+			 * chequeAmt.setBankName(BankName);
+			 * chequeAmt.setChequeNumber(checqueNum); chequeAmt.setDate(new
+			 * Date()); chequeAmt.setBooking(booking);
+			 * chequeAmt.setPaidType("cheque");
+			 * birthdayservice.saveAdvanceBookingPaymentDetails(chequeAmt); }
+			 * if(flagcredit==0) {
+			 * 
+			 * AdvanceBookingPaymentDetails creditpay=new
+			 * AdvanceBookingPaymentDetails(); creditpay.setDate(new Date());
+			 * creditpay.setPaidAmount(Double.parseDouble(creditAmount));
+			 * creditpay.setPaidType("credit"); creditpay.setBooking(booking);
+			 * 
+			 * birthdayservice.saveAdvanceBookingPaymentDetails(creditpay);
+			 * 
+			 * }
+			 */
+		}
+
+		System.out.println(string);
+
+		return new ModelAndView("BillPrintOfAdvanceBooking");
+
+	}
+
+	@RequestMapping(value = "/viewAvailability", method = RequestMethod.GET)
+	@ResponseBody
+	public ModelAndView view(@RequestParam("d") String d, ModelMap model) throws ParseException {
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		Date date2 = null;
+		try {
+			date2 = dateFormat.parse(d);
+		} catch (ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		List<AdvanceBooking> advancebookinglist = birthdayservice.getAvailability(date2);
+		model.addAttribute("advancebookinglist", advancebookinglist);
+		return new ModelAndView("availability");
+
+	}
+
+	@RequestMapping(value = "/viewbooking", method = RequestMethod.GET)
+
+	public ModelAndView viewBooking(Model model) {
+
+		List<AdvanceBooking> listOfAdvanceBooking = birthdayservice.getListOfAdvanceBirthdayBooking();
+
+		model.addAttribute("listOfAdvanceBooking", listOfAdvanceBooking);
+
+		System.out.println(listOfAdvanceBooking.size() + "this is size");
+		return new ModelAndView("ViewBooking");
+
+	}
+
+	@RequestMapping(value = "/bookingcancle", method = RequestMethod.GET)
+	@ResponseBody
+	public ModelAndView bookingCancle() {
+
+		return new ModelAndView("BookingCancle");
+
+	}
+
+	@RequestMapping(value = "/getCancallation", method = RequestMethod.GET)
+	@ResponseBody
+	public ModelAndView cancleBooking(@RequestParam("Type") String Type, @RequestParam("date") String date,
+			@RequestParam("id") String id, Model model) {
+
+		List<AdvanceBooking> bookingList = null;
+		System.out.println("Welcome cancellation" + date);
+
+		if (Type.equalsIgnoreCase("date")) {
+
+			/*
+			 * SimpleDateFormat dateFormat =new SimpleDateFormat("dd/MM/yyyy");
+			 * Date date2 = null; try { date2 =dateFormat.parse(date); } catch
+			 * (ParseException e1) {
+			 * 
+			 * e1.printStackTrace(); }
+			 */
+
+			DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+			Date date2 = null;
+			try {
+				date2 = (Date) formatter.parse(date);
+			} catch (Exception e) {
+
+			}
+			System.out.println("after format" + date2);
+			bookingList = birthdayservice.getBookingByDate(date2);
+		}
+
+		if (Type.equalsIgnoreCase("id")) {
+			int id1 = Integer.parseInt(id);
+			bookingList = birthdayservice.getBookingById(id1);
+		}
+
+		model.addAttribute("bookingList", bookingList);
+
+		System.out.println("booking list size"+bookingList.size());
+		return new ModelAndView("BookingCancleConfirmation");
+
+	}
+
+	@RequestMapping(value = "/getCanclationdiductionWindow", method = RequestMethod.GET)
+	@ResponseBody
+	public ModelAndView getCanclationdiductionWindow(@RequestParam("bookingId") String bookingId,
+			@RequestParam("status") String status, @RequestParam("customer") String customer, Model model) {
+
+		int id = Integer.parseInt(bookingId);
+
+		AdvanceBooking booking = new AdvanceBooking();
+		booking = birthdayservice.getBookingObjectById(id);
+		model.addAttribute("booking", booking);
+
+		Customer c = booking.getCustomer();
+		System.out.println("booking objec" + booking.getCustomer() + "live" + c);
+
+		System.out.println("1");
+		System.out.println("1");
+		System.out.println("1");
+		System.out.println("1");
+		System.out.println("1");
+
+		return new ModelAndView("DiductionWindow");
+	}
+
+	@RequestMapping(value = "/getCanclationConfirmation", method = RequestMethod.GET)
+	@ResponseBody
+	public String ConfirmCancle(@RequestParam("bookingId") String bookingId, @RequestParam("status") String status,
+			@RequestParam("deductAmt") String deductAmt, Model model) {
+
+		int id = Integer.parseInt(bookingId);
+		System.out.println("booking is" + id);
+
+		AdvanceBooking booking = new AdvanceBooking();
+		booking = birthdayservice.getBookingObjectById(id);
+
+		birthdayservice.updateBookingById(id);
+
+		Customer cust = new Customer();
+
+		Bill bill = new Bill();
+
+		cust = booking.getCustomer();
+		System.out.println("customer is" + cust);
+		double paidAmt = Double.parseDouble(deductAmt);
+		paidAmt = -paidAmt;
+		bill.setBill_paid(paidAmt);
+		bill.setBill_Date(new Date());
+		bill.setCust(cust);
+		System.out.println("5");
+
+		try {
+			int serviceId = taxService.getServicetaxByTax(Double.parseDouble("14.5"));
+			ServiceTax tax = new ServiceTax();
+			tax.setId(serviceId);
+			bill.setServiceTax(tax);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		billservice.billsave(bill);
+		/*
+		 * Session session=sessionfactory.openSession(); Transaction
+		 * t=session.beginTransaction(); session.save(bill); t.commit();
+		 * session.close(); System.out.println("5");
+		 */
+		return " success";
+	}
+
+	@RequestMapping(value = "/getBookingPostpond", method = RequestMethod.GET)
+	@ResponseBody
+	public ModelAndView postpondBooking(@RequestParam("Typep") String Typep, @RequestParam("datep") String datep,
+			@RequestParam("idp") String idp, Model model) {
+
+		System.out.println("Welcome postpond");
+
+		List<AdvanceBooking> bookingList = null;
+
+		if (Typep.equalsIgnoreCase("date")) {
+
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+			Date date2 = null;
+			try {
+				date2 = dateFormat.parse(datep);
+			} catch (ParseException e1) {
+
+				e1.printStackTrace();
+			}
+			bookingList = birthdayservice.getBookingByDate(date2);
+		}
+
+		if (Typep.equalsIgnoreCase("id")) {
+			int id1 = Integer.parseInt(idp);
+			bookingList = birthdayservice.getBookingById(id1);
+		}
+
+		model.addAttribute("bookingList", bookingList);
+
+		System.out.println(bookingList.size());
+
+		return new ModelAndView("BookingPostpondConfirmation");
+
+	}
+
+	@RequestMapping(value = "/getPostPondConfirmation", method = RequestMethod.GET)
+	@ResponseBody
+	public String ConfirmPostpond(@RequestParam("bookingId") String bookingId, @RequestParam("status") String status,
+			@RequestParam("customer") String customer, Model model) {
+
+		int id = Integer.parseInt(bookingId);
+
+		System.out.println("Welcome postpond confirmatioin");
+		birthdayservice.PostPondBookingById(id);
+		return "";
+	}
+
+	@RequestMapping(value = "/confirmAndSavePospond", method = RequestMethod.POST)
+	@ResponseBody
+	public String confirmAndSavePospond(@RequestParam("id") String id, @RequestParam("date") String date,
+			@RequestParam("sTime") String sTime, @RequestParam("eTime") String eTime, ModelMap model)
+					throws ParseException {
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		Date date2 = null;
+		try {
+			date2 = dateFormat.parse(date);
+		} catch (ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+		java.sql.Time sstime = null;
+		java.sql.Time eetime = null;
+
+		try {
+			SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+			Date ddq = null;
+			ddq = df.parse(sTime);
+			sstime = new java.sql.Time(ddq.getTime());
+			Date ddend = null;
+			ddend = df.parse(eTime);
+			eetime = new java.sql.Time(ddend.getTime());
+		} catch (Exception e) {
+			e.getMessage();
+		}
+
+		int bookingId = Integer.parseInt(id);
+
+		String string = null;
+		Bill bill = new Bill();
+		Customer c = new Customer();
+		Customer c2 = new Customer();
+		BirthdayPackage pack = new BirthdayPackage();
+		AdvanceBooking bookingToPostpond = new AdvanceBooking();
+		AdvanceBooking bookingTosave = new AdvanceBooking();
+		AdvanceBookingPospond pospondobj = new AdvanceBookingPospond();
+		bookingToPostpond = birthdayservice.getBookingObjectById(bookingId);
+		List<AdvanceBooking> b = birthdayservice.getBookingById(bookingId);
+
+		for (AdvanceBooking advanceBooking : b) {
+			c = advanceBooking.getCustomer();
+
+			pack = advanceBooking.getBirthdayPackage();
+		}
+
+		int adults = bookingToPostpond.getAdult();
+		int child = bookingToPostpond.getChild();
+		double amt = bookingToPostpond.getPaidAmount();
+		double tot = bookingToPostpond.getTotal();
+		bookingTosave.setCustomer(c);
+		bookingTosave.setBirthdayPackage(pack);
+		bookingTosave.setAdult(adults);
+		bookingTosave.setChild(child);
+		bookingTosave.setPaidAmount((amt * 75) / 100);
+		bookingTosave.setTotal(tot);
+		bookingTosave.setDate(date2);
+		bookingTosave.setStartTime(sstime);
+		bookingTosave.setEndTime(eetime);
+		bookingTosave.setStatus("processing");
+		c2 = c;
+		string = birthdayservice.saveBooking(bookingTosave);
+
+		if (string.equalsIgnoreCase("success")) {
+
+			try {
+				int serviceId = taxService.getServicetaxByTax(Double.parseDouble("14.5"));
+				ServiceTax tax = new ServiceTax();
+				tax.setId(serviceId);
+				bill.setServiceTax(tax);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			double amt1 = ((amt * 75) / 100);
+			amt1 = -amt1;
+			bill.setCust(c);
+			bill.setBill_Date(new Date());
+			bill.setBill_paid(amt1);
+			bill.setBill_amount(amt);
+			billservice.billsave(bill);
+
+			System.out.println("inside success fun");
+
+			pospondobj.setBooking(bookingToPostpond);
+			pospondobj.setCust(bookingToPostpond.getCustomer());
+			pospondobj.setPaidAmount(amt);
+			pospondobj.setDiductAmount((amt * 25) / 100);
+
+			birthdayservice.savePostondDetails(pospondobj);
+			birthdayservice.PostPondBookingById(bookingId);
+
+		}
+
+		return string;
+
+	}
+
+}
