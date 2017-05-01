@@ -47,6 +47,7 @@ public class AccountController
 	 public String addExp(HttpServletRequest request)
 	 {
 		
+		int i=10;
 		String[] exp = request.getParameterValues("exp[]");
         
         	String[] amt = request.getParameterValues("amt[]");
